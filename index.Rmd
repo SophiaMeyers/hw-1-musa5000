@@ -1,5 +1,5 @@
 ---
-title: "Homework 1"
+title: "Homework 1: Using OLS Regression to Predict Median House Values in Philadelphia"
 authors: Chloe Alimurong, Sophia Meyers & Evelyn Zhong
 output: html_document
 ---
@@ -20,9 +20,9 @@ library(dplyr)
 
 ```
 
-# Correlations
+# Exploratory Analysis
 ```{r}
-#| label: loading the data
+#| label: loading the data and summary table
 
 regdata <- read.csv("~/GitHub/MUSA-5000-portfolio/HW1/RegressionData.csv")
 
@@ -37,6 +37,27 @@ sum_hist <- hist(sum_table$avg_medhval)
 
 print(sum_table)
 summary(sum_table)
+
+```
+
+# Stepwise Regression
+```{r}
+#| label: Using Stepwise regression to determine the best model based on the Akaike Information Criterion
+
+
+```
+
+# K-fold Cross Validation
+
+```{r}
+#| label: calculating RMSE and re-running the model with two predictors: PCTVACANT and MEDHHINC 
+
+```
+
+# Standardized Regression Residuals
+```{r}
+#| label: Histogram and Chloropleth map of standardized regression residuals
+
 
 ```
 
