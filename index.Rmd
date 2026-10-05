@@ -1,14 +1,28 @@
 ---
-title: "HW 1 - OLS Regression"
-format: html
+title: "Homework 1"
+authors: Chloe Alimurong, Sophia Meyers & Evelyn Zhong
+output: html_document
 ---
-
+# Introduction
 ```{r}
 #| label: setup
-#| include: false
-
+#| warning: false
+#| message: false 
+#| 
+library(Hmisc)
+library(DAAG)
+library(car)  #to calculate VIF
+library(MASS)
+library(rsq)
 library(tidyverse)
+library(caret)
 library(dplyr)
+
+```
+
+# Correlations
+```{r}
+#| label: loading the data
 
 regdata <- read.csv("~/GitHub/MUSA-5000-portfolio/HW1/RegressionData.csv")
 
@@ -23,4 +37,6 @@ sum_hist <- hist(sum_table$avg_medhval)
 
 print(sum_table)
 summary(sum_table)
+
 ```
+
