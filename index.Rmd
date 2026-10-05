@@ -10,7 +10,7 @@ output: rmdformats::readthedown
 #| label: setup
 #| warning: false
 #| message: false 
-# note to self: make sure all libraries are in use or necessary (since tidyverse has a lot)
+# note to self: make sure all libraries are in use or necessary (since tidyverse has a lot)...
 
 library(sf)
 library(Hmisc)
