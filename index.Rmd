@@ -45,6 +45,7 @@ summary(sum_table)
 ## b.
 ```{r}
 #| label: Scatter plot for each predictor
+#| error: false
 
 #predictors <- regdata %>%
   #select(MEDHVAL, PCTVACANT, PCTBACHMOR, NBELPOV100)
@@ -56,7 +57,7 @@ summary(sum_table)
 ## c.
 ```{r}
 #| label: Pearson correlation for each predictor
-
+#note to self: make this a matrix with only the correct # of values
 
 cor(regdata$PCTVACANT, regdata$MEDHVAL, method = "pearson")
 cor(regdata$PCTSINGLES, regdata$MEDHVAL, method = "pearson")
@@ -70,6 +71,7 @@ pearson$r
 ## d.
 ```{r}
 #| label: Chloropleth maps of each variable using the sf (simple features) packages
+#| note: readOGR has been officially retired as a part of the rgdal library.
 
 shapefile <- "~/GitHub/hw-1-musa5000/Lecture 1 - RegressionData.shp/RegressionData.shp"
 
