@@ -1,0 +1,26 @@
+---
+title: "HW 1 - OLS Regression"
+format: html
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(dplyr)
+
+regdata <- read.csv("~/GitHub/MUSA-5000-portfolio/HW1/RegressionData.csv")
+
+regdata <- regdata %>% mutate(across(where(is.character), as.numeric))
+
+sum_table <- 
+sum_table <- regdata %>%
+  mutate(avg_medhval = mean(regdata$MEDHVAL)) %>%
+  mutate(sd_medhval = sd(regdata$MEDHVAL))
+
+sum_hist <- hist(sum_table$avg_medhval)
+
+print(sum_table)
+summary(sum_table)
+```
