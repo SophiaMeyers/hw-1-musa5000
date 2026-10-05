@@ -1,14 +1,17 @@
 ---
 title: "Homework 1: Using OLS Regression to Predict Median House Values in Philadelphia"
 authors: Chloe Alimurong, Sophia Meyers & Evelyn Zhong
-output: html_document
+date: October 5, 2026
+output: rmdformats::readthedown
 ---
+
 # Introduction
 ```{r}
 #| label: setup
 #| warning: false
 #| message: false 
-#| 
+
+library(sf)
 library(Hmisc)
 library(DAAG)
 library(car)  #to calculate VIF
@@ -66,8 +69,11 @@ pearson$r
 ```
 ## d.
 ```{r}
-#| label: Chloropleth maps of each variable using readOGR
+#| label: Chloropleth maps of each variable using the sf (simple features) packages
 
+shapefile <- "~/GitHub/hw-1-musa5000/Lecture 1 - RegressionData.shp/RegressionData.shp"
+
+c_map = read_sf(shapefile)
 
 
 ```
