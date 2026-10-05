@@ -39,6 +39,38 @@ print(sum_table)
 summary(sum_table)
 
 ```
+## b.
+```{r}
+#| label: Scatter plot for each predictor
+
+#predictors <- regdata %>%
+  #select(MEDHVAL, PCTVACANT, PCTBACHMOR, NBELPOV100)
+#cor(predictors)
+
+```
+
+
+## c.
+```{r}
+#| label: Pearson correlation for each predictor
+
+
+cor(regdata$PCTVACANT, regdata$MEDHVAL, method = "pearson")
+cor(regdata$PCTSINGLES, regdata$MEDHVAL, method = "pearson")
+cor(regdata$PCTBACHMOR, regdata$MEDHVAL, method = "pearson")
+cor(regdata$NBELPOV100, regdata$MEDHVAL, method = "pearson")
+
+pearson <- rcorr(as.matrix(regdata), type="pearson")                            
+pearson$r 
+
+```
+## d.
+```{r}
+#| label: Chloropleth maps of each variable using readOGR
+
+
+
+```
 
 # Stepwise Regression
 ```{r}
