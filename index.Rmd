@@ -10,11 +10,12 @@ output: rmdformats::readthedown
 #| label: setup
 #| warning: false
 #| message: false 
+# note to self: make sure all libraries are in use or necessary (since tidyverse has a lot)
 
 library(sf)
 library(Hmisc)
 library(DAAG)
-library(car)  #to calculate VIF
+library(car)
 library(MASS)
 library(rsq)
 library(tidyverse)
@@ -38,7 +39,7 @@ sum_table <- regdata %>%
 
 sum_hist <- hist(sum_table$avg_medhval)
 
-print(sum_table)
+print(sum_hist)
 summary(sum_table)
 
 ```
