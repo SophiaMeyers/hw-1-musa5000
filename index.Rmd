@@ -4,8 +4,10 @@ authors: Chloe Alimurong, Sophia Meyers & Evelyn Zhong
 date: October 5, 2026
 output: rmdformats::readthedown
 ---
+## Make sure you have results paragraph
 
 # Introduction
+### a.
 ```{r}
 #| label: setup
 #| warning: false
@@ -21,36 +23,89 @@ library(rsq)
 library(tidyverse)
 library(caret)
 library(dplyr)
-
+library(ggplot2)
+library(tidyr)
+library(patchwork)
 ```
 
-# Exploratory Analysis
+# Methods
+## Exploratory Analysis
 ```{r}
-#| label: loading the data and summary table
+#| label: summary statistics & examining the distribution of the dependent variable and 
 
 regdata <- read.csv("~/GitHub/MUSA-5000-portfolio/HW1/RegressionData.csv")
+#names(regdata) # gets the names of each variable.
 
-regdata <- regdata %>% mutate(across(where(is.character), as.numeric))
+regdata <- regdata %>% mutate(across(where(is.character), as.numeric)) # some of them were returning a string, we need a number to run summary statistics.
 
-sum_table <- 
-sum_table <- regdata %>%
-  mutate(avg_medhval = mean(regdata$MEDHVAL)) %>%
-  mutate(sd_medhval = sd(regdata$MEDHVAL))
+vars <- c("MEDHVAL","PCTBACHMOR", "NBELPOV100", "PCTVACANT", "PCTSINGLES")
 
-sum_hist <- hist(sum_table$avg_medhval)
+sum_table <- data.frame(
+  Variable = c("Median House Value",
+                        "# Households Living in Poverty",
+                        "% with Bachelor's Degree or Higher",
+                        "% Vacant Houses",
+                        "% Single House Units"),
+  Mean = sapply(regdata[vars], mean, na.rm = TRUE), #creates column of mean values for each variable, ignoring null values.
+  SD = sapply(regdata[vars], sd, na.rm = TRUE) #creates column of sd values for each variable, ignoring null values.
+)
 
-print(sum_hist)
-summary(sum_table)
+sum_table
+
+#running hist on all of the variables we defined above
+for (v in vars){
+  hist(regdata[[v]],
+       main = paste("Distribution of ", v),
+       xlab =v,
+       col = "lightblue",
+       border = "darkblue")
+}
 
 ```
+```{r}
+#| label: log transformations and its effect on the distribution
+
+regdata <- regdata %>%
+  mutate(LNMEDHVAL    = log(MEDHVAL),
+         LNPCTBACHMOR = log(1 + PCTBACHMOR),
+         LNBELPOV100 = log(1 + NBELPOV100),
+         LNPCTVACANT  = log(1 + PCTVACANT),
+         LNPCTSINGLES = log(1 + PCTSINGLES))
+
+hist(regdata$MEDHVAL,     main = "MEDHVAL",     xlab = "MEDHVAL",col = "lightblue",border = "darkblue")
+hist(regdata$LNMEDHVAL,   main = "LNMEDHVAL",   xlab = "LNMEDHVAL",col = "lightblue",border = "darkblue")
+
+
+hist(regdata$PCTBACHMOR,  main = "PCTBACHMOR",  xlab = "PCTBACHMOR",col = "lightblue",border = "darkblue")
+hist(regdata$LNPCTBACHMOR, main = "LNPCTBACHMOR", xlab = "LNPCTBACHMOR",col = "lightblue",border = "darkblue")
+
+
+hist(regdata$NBELPOV100,  main = "NBELPOV100",  xlab = "NBELPOV100",col = "lightblue",border = "darkblue")
+hist(regdata$LNBELPOV100, main = "LNBELPOV100", xlab = "LNBELPOV100",col = "lightblue",border = "darkblue")
+
+hist(regdata$PCTVACANT,  main = "PCTVACANT",  xlab = "PCTVACANT",col = "lightblue",border = "darkblue")
+hist(regdata$LNPCTVACANT, main = "LNPCTVACANT", xlab = "LNPCTVACANT",col = "lightblue",border = "darkblue")
+
+hist(regdata$PCTSINGLES,  main = "PCTSINGLES",  xlab = "PCTSINGLES",col = "lightblue",border = "darkblue")
+hist(regdata$LNPCTSINGLES, main = "LNPCTSINGLES", xlab = "LNPCTSINGLES",col = "lightblue",border = "darkblue")
+
+```
+
+
 ## b.
 ```{r}
 #| label: Scatter plot for each predictor
-#| error: false
+#| message: false
+#| warning: false
 
-#predictors <- regdata %>%
-  #select(MEDHVAL, PCTVACANT, PCTBACHMOR, NBELPOV100)
-#cor(predictors)
+regdata %>%
+  dplyr::select(LNMEDHVAL, PCTBACHMOR, LNBELPOV100, PCTVACANT, PCTSINGLES) %>%
+  pivot_longer(-LNMEDHVAL, names_to = "Predictor", values_to = "Value") %>%
+  ggplot(aes(x = Value, y = LNMEDHVAL)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE, color = "purple") +
+  facet_wrap(~Predictor, scales = "free_x") +
+  labs(x = NULL, y = "LNMEDHVAL")
 
 ```
 
@@ -71,34 +126,60 @@ pearson$r
 ```
 ## d.
 ```{r}
-#| label: Chloropleth maps of each variable using the sf (simple features) packages
+#| label: Chloropleth maps of each variable using the sf (simple features) and ggplot packages
 #| note: readOGR has been officially retired as a part of the rgdal library.
 
 shapefile <- "~/GitHub/hw-1-musa5000/Lecture 1 - RegressionData.shp/RegressionData.shp"
 
 c_map = read_sf(shapefile)
 
+#names(c_map)
 
+c_map <- c_map %>%
+  mutate(LNMEDHVAL    = log(MEDHVAL),
+         LNBELPOV100 = log(1 + NBelPov100),
+         PCTVACANT, PCTSINGLES, PCTBACHMOR)
+
+#maps the log of the dependent variable: LNMEDHVAL
+ggplot(c_map) +
+  geom_sf(aes(fill=LNMEDHVAL))+
+  scale_fill_distiller(palette = "BuPu", direction = 1)+
+  theme_void()+
+  labs(title = "Log of Median House Value")
+
+# maps 2-5: the four predictors
+p1 <- ggplot(c_map) + geom_sf(aes(fill = LNBELPOV100)) +scale_fill_distiller(palette = "BuPu", direction = 1) + theme_void() + labs(title = "LNBELPOV100")
+p2 <- ggplot(c_map) + geom_sf(aes(fill = PCTBACHMOR))   +scale_fill_distiller(palette = "BuPu", direction = 1) + theme_void() + labs(title = "PCTBACHMOR")
+p3 <- ggplot(c_map) + geom_sf(aes(fill = PCTVACANT))    +scale_fill_distiller(palette = "BuPu", direction = 1) + theme_void() + labs(title = "PCTVACANT")
+p4 <- ggplot(c_map) + geom_sf(aes(fill = PCTSINGLES))   +scale_fill_distiller(palette = "BuPu", direction = 1) + theme_void() +labs(title = "PCTSINGLES")
+
+# combine into one 2x2 figure
+(p1 | p2) / (p3 | p4)
 ```
 
-# Stepwise Regression
+## Stepwise Regression
+# Sophia
 ```{r}
 #| label: Using Stepwise regression to determine the best model based on the Akaike Information Criterion
 
 
 ```
 
-# K-fold Cross Validation
-
+## K-fold Cross Validation
+# Sophia
 ```{r}
 #| label: calculating RMSE and re-running the model with two predictors: PCTVACANT and MEDHHINC 
 
 ```
 
-# Standardized Regression Residuals
+# Results
+## Standardized Regression Residuals
+# Evelyn
 ```{r}
 #| label: Histogram and Chloropleth map of standardized regression residuals
 
 
 ```
 
+# Discussions and Limitations
+# Evelyn
