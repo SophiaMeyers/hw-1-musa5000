@@ -174,7 +174,7 @@ p4 <- ggplot(c_map) + geom_sf(aes(fill = PCTSINGLES))   +scale_fill_distiller(pa
 
 # Results
 ## Standardized Regression Residuals
-# 
+# Evelyn
 ```{r}
 #| label: Histogram and Chloropleth map of standardized regression residuals
 
@@ -182,3 +182,4 @@ p4 <- ggplot(c_map) + geom_sf(aes(fill = PCTSINGLES))   +scale_fill_distiller(pa
 ```
 
 # Discussions and Limitations
+# Evelyn
