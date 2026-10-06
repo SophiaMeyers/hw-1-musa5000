@@ -72,22 +72,22 @@ regdata <- regdata %>%
          LNPCTVACANT  = log(1 + PCTVACANT),
          LNPCTSINGLES = log(1 + PCTSINGLES))
 
-hist(regdata$MEDHVAL,     main = "MEDHVAL",     xlab = "MEDHVAL")
-hist(regdata$LNMEDHVAL,   main = "LNMEDHVAL",   xlab = "LNMEDHVAL")
+hist(regdata$MEDHVAL,     main = "MEDHVAL",     xlab = "MEDHVAL",col = "lightblue",border = "darkblue")
+hist(regdata$LNMEDHVAL,   main = "LNMEDHVAL",   xlab = "LNMEDHVAL",col = "lightblue",border = "darkblue")
 
 
-hist(regdata$PCTBACHMOR,  main = "PCTBACHMOR",  xlab = "PCTBACHMOR")
-hist(regdata$LNPCTBACHMOR, main = "LNPCTBACHMOR", xlab = "LNPCTBACHMOR")
+hist(regdata$PCTBACHMOR,  main = "PCTBACHMOR",  xlab = "PCTBACHMOR",col = "lightblue",border = "darkblue")
+hist(regdata$LNPCTBACHMOR, main = "LNPCTBACHMOR", xlab = "LNPCTBACHMOR",col = "lightblue",border = "darkblue")
 
 
-hist(regdata$NBELPOV100,  main = "NBELPOV100",  xlab = "NBELPOV100")
-hist(regdata$LNBELPOV100, main = "LNBELPOV100", xlab = "LNBELPOV100")
+hist(regdata$NBELPOV100,  main = "NBELPOV100",  xlab = "NBELPOV100",col = "lightblue",border = "darkblue")
+hist(regdata$LNBELPOV100, main = "LNBELPOV100", xlab = "LNBELPOV100",col = "lightblue",border = "darkblue")
 
-hist(regdata$PCTVACANT,  main = "PCTVACANT",  xlab = "PCTVACANT")
-hist(regdata$LNPCTVACANT, main = "LNPCTVACANT", xlab = "LNPCTVACANT")
+hist(regdata$PCTVACANT,  main = "PCTVACANT",  xlab = "PCTVACANT",col = "lightblue",border = "darkblue")
+hist(regdata$LNPCTVACANT, main = "LNPCTVACANT", xlab = "LNPCTVACANT",col = "lightblue",border = "darkblue")
 
-hist(regdata$PCTSINGLES,  main = "PCTSINGLES",  xlab = "PCTSINGLES")
-hist(regdata$LNPCTSINGLES, main = "LNPCTSINGLES", xlab = "LNPCTSINGLES")
+hist(regdata$PCTSINGLES,  main = "PCTSINGLES",  xlab = "PCTSINGLES",col = "lightblue",border = "darkblue")
+hist(regdata$LNPCTSINGLES, main = "LNPCTSINGLES", xlab = "LNPCTSINGLES",col = "lightblue",border = "darkblue")
 
 ```
 
@@ -95,6 +95,7 @@ hist(regdata$LNPCTSINGLES, main = "LNPCTSINGLES", xlab = "LNPCTSINGLES")
 ## b.
 ```{r}
 #| label: Scatter plot for each predictor
+#| message: false
 #| warning: false
 
 regdata %>%
@@ -102,7 +103,7 @@ regdata %>%
   pivot_longer(-LNMEDHVAL, names_to = "Predictor", values_to = "Value") %>%
   ggplot(aes(x = Value, y = LNMEDHVAL)) +
   geom_point(alpha = 0.4) +
-  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  geom_smooth(method = "lm", se = FALSE, color = "purple") +
   facet_wrap(~Predictor, scales = "free_x") +
   labs(x = NULL, y = "LNMEDHVAL")
 
@@ -139,6 +140,7 @@ c_map <- c_map %>%
          LNBELPOV100 = log(1 + NBelPov100),
          PCTVACANT, PCTSINGLES, PCTBACHMOR)
 
+#maps the log of the dependent variable: LNMEDHVAL
 ggplot(c_map) +
   geom_sf(aes(fill=LNMEDHVAL))+
   scale_fill_distiller(palette = "BuPu", direction = 1)+
@@ -154,7 +156,6 @@ p4 <- ggplot(c_map) + geom_sf(aes(fill = PCTSINGLES))   +scale_fill_distiller(pa
 # combine into one 2x2 figure
 (p1 | p2) / (p3 | p4)
 ```
-
 
 ## Stepwise Regression
 # Sophia
