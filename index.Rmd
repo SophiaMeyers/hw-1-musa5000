@@ -7,7 +7,11 @@ output: rmdformats::readthedown
 ## Make sure you have results paragraph
 
 # Introduction
-### a.
+## a. 
+In this analysis, we will assess the relationship between median house values in Philadelphia and variables such as # Households Living in Poverty, % with Bachelor's Degree or Higher, % Vacant Houses and % Single House Units. 
+## b. 
+The predictors in our analysis describe different aspects of housing that could potentially influence house values and prices. The number of households in poverty and with a bachelors degree, to some degree, explain the economic status of the demographic's housing market. Those living in poverty may not be able to afford houses with higher price tags and those with a bachelors degree may have an income that could afford houses with higher price tags. These population factors indirectly relate to house value, thus why we chose them to predict in our analysis. For unit-specific predictors like vacant houses and single house units, these two signal environmental factors that could influence house value. For vacant houses, we expect that the neighborhood may not be as desirable or may not have high economic activity, making it less desirable to live, which could decrease house values. The percentage of single house units may also highlight the neighborhood's population. In Philadelphia, it is rare to see single-family detached homes. The common house type are multi-family style houses. So for those living in single-family homes, it indicates the desire to live at longer terms and farther from the city center. These types of homes may single out those with higher incomes to afford a single unit house within a city, which may mean higher house value. All of these predictors indicate something about the housing market population and environment indirectly, making them good examples of variables to predict median house value within Philadelphia.
+
 ```{r}
 #| label: setup
 #| warning: false
@@ -29,9 +33,14 @@ library(patchwork)
 ```
 
 # Methods
-## Exploratory Analysis
+## a. Data Cleaning
+The original Philadelphia Block Group dataset had 1816 observations and was cleaned in order to achieve a dataset with 1720 observations. The following items were removed; Block groups where population < 40, Block groups where there are no housing units, Block groups where the median house value is lower than 10,000, One North Philadelphia block group which had a very high median house value (over 800,000), and a very low median household income (less than $8,000). The purpose of their removal was to remove any outliers, no data, and insufficient sample size from our analysis.
+
+
+## b. Exploratory Analysis
+i. In this section, we will evaluate the summary statistics and distributions of the dependent variable and predictors.
 ```{r}
-#| label: summary statistics & examining the distribution of the dependent variable and 
+#| label: summary statistics & examining the distribution of the dependent variable and predictors
 
 regdata <- read.csv("~/GitHub/MUSA-5000-portfolio/HW1/RegressionData.csv")
 #names(regdata) # gets the names of each variable.
@@ -62,6 +71,8 @@ for (v in vars){
 }
 
 ```
+ii. In our exploratory data analysis, we will examine the correlations between the predictors. A correlation is , and provide the formula for the sample correlation coefficient r. Also mention the possible range of r values, and what correlation of 0 means.
+
 ```{r}
 #| label: log transformations and its effect on the distribution
 
@@ -181,5 +192,5 @@ p4 <- ggplot(c_map) + geom_sf(aes(fill = PCTSINGLES))   +scale_fill_distiller(pa
 
 ```
 
-# Discussions and Limitations
+## Discussions and Limitations
 # Evelyn
