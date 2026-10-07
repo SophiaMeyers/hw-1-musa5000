@@ -7,7 +7,7 @@ output: rmdformats::readthedown
 ## Make sure you have results paragraph
 
 # Introduction
-## a. 
+## a.
 In this analysis, we will assess the relationship between median house values in Philadelphia and variables such as # Households Living in Poverty, % with Bachelor's Degree or Higher, % Vacant Houses and % Single House Units. 
 ## b. 
 The predictors in our analysis describe different aspects of housing that could potentially influence house values and prices. The number of households in poverty and with a bachelors degree, to some degree, explain the economic status of the demographic's housing market. Those living in poverty may not be able to afford houses with higher price tags and those with a bachelors degree may have an income that could afford houses with higher price tags. These population factors indirectly relate to house value, thus why we chose them to predict in our analysis. For unit-specific predictors like vacant houses and single house units, these two signal environmental factors that could influence house value. For vacant houses, we expect that the neighborhood may not be as desirable or may not have high economic activity, making it less desirable to live, which could decrease house values. The percentage of single house units may also highlight the neighborhood's population. In Philadelphia, it is rare to see single-family detached homes. The common house type are multi-family style houses. So for those living in single-family homes, it indicates the desire to live at longer terms and farther from the city center. These types of homes may single out those with higher incomes to afford a single unit house within a city, which may mean higher house value. All of these predictors indicate something about the housing market population and environment indirectly, making them good examples of variables to predict median house value within Philadelphia.
@@ -16,7 +16,7 @@ The predictors in our analysis describe different aspects of housing that could 
 #| label: setup
 #| warning: false
 #| message: false 
-# note to self: make sure all libraries are in use or necessary (since tidyverse has a lot)
+# note to self: make sure all libraries are in use or necessary (since tidyverse has a lot)...
 
 library(sf)
 library(Hmisc)
@@ -42,7 +42,8 @@ i. In this section, we will evaluate the summary statistics and distributions of
 ```{r}
 #| label: summary statistics & examining the distribution of the dependent variable and predictors
 
-regdata <- read.csv("~/GitHub/MUSA-5000-portfolio/HW1/RegressionData.csv")
+#regdata <- read.csv("~/GitHub/MUSA-5000-portfolio/HW1/RegressionData.csv")
+regdata <- read.csv("RegressionData.csv")
 #names(regdata) # gets the names of each variable.
 
 regdata <- regdata %>% mutate(across(where(is.character), as.numeric)) # some of them were returning a string, we need a number to run summary statistics.
@@ -140,7 +141,8 @@ pearson$r
 #| label: Chloropleth maps of each variable using the sf (simple features) and ggplot packages
 #| note: readOGR has been officially retired as a part of the rgdal library.
 
-shapefile <- "~/GitHub/hw-1-musa5000/Lecture 1 - RegressionData.shp/RegressionData.shp"
+#shapefile <- "~/GitHub/hw-1-musa5000/Lecture 1 - RegressionData.shp/RegressionData.shp"
+shapefile <- "Lecture 1 - RegressionData.shp/RegressionData.shp"
 
 c_map = read_sf(shapefile)
 
@@ -173,7 +175,27 @@ p4 <- ggplot(c_map) + geom_sf(aes(fill = PCTSINGLES))   +scale_fill_distiller(pa
 ```{r}
 #| label: Using Stepwise regression to determine the best model based on the Akaike Information Criterion
 
+# Full OLS model with all four predictors
+model_full <- lm(
+  LNMEDHVAL ~ PCTVACANT + PCTSINGLES + PCTBACHMOR + LNBELPOV100,
+  data = regdata
+)
 
+summary(model_full)
+```
+```{r}
+# Stepwise regression using AIC
+step_model <- step(model_full)
+
+step_model
+```
+```{r}
+# View the sequence of models considered
+step_model$anova
+```
+```{r}
+# Show the final model selected by stepwise regression
+formula(step_model)
 ```
 
 ## K-fold Cross Validation
@@ -181,6 +203,60 @@ p4 <- ggplot(c_map) + geom_sf(aes(fill = PCTSINGLES))   +scale_fill_distiller(pa
 ```{r}
 #| label: calculating RMSE and re-running the model with two predictors: PCTVACANT and MEDHHINC 
 
+# 5-fold cross-validation for the full four-predictor model
+cv_full <- CVlm(
+  data = regdata,
+  form.lm = model_full,
+  m = 5,
+  plotit = FALSE
+)
+```
+
+```{r}
+names(cv_full)
+str(cv_full)
+```
+
+```{r}
+# Calculate RMSE for the full model
+rmse_full <- sqrt(
+  mean((cv_full$LNMEDHVAL - cv_full$cvpred)^2, na.rm = TRUE)
+)
+rmse_full
+```
+```{r}
+# Model with PCTVACANT and MEDHHINC
+model_two <- lm(
+  LNMEDHVAL ~ PCTVACANT + MEDHHINC,
+  data = regdata
+)
+summary(model_two)
+
+# 5-fold cross-validation
+cv_two <- CVlm(
+  data = regdata,
+  form.lm = model_two,
+  m = 5,
+  plotit = FALSE
+)
+
+# Calculate 5-fold cross-validation RMSE
+rmse_two <- sqrt(
+  mean((cv_two$LNMEDHVAL - cv_two$cvpred)^2, na.rm = TRUE)
+)
+
+rmse_two
+```
+```{r}
+rmse_results <- data.frame(
+  Model = c(
+    "Full model: 4 predictors",
+    "Reduced model: PCTVACANT + MEDHHINC"
+  ),
+  RMSE = c(rmse_full, rmse_two)
+)
+
+rmse_results
 ```
 
 # Results
