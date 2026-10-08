@@ -32,12 +32,12 @@ library(corrplot)
 
 ```
 
-# Methods: Exploratory Analysis
+# Exploratory Analysis
 ## Data Cleaning
 The original Philadelphia Block Group dataset had 1816 observations and was cleaned in order to achieve a dataset with 1720 observations. The following items were removed; Block groups where population < 40, Block groups where there are no housing units, Block groups where the median house value is lower than 10,000, One North Philadelphia block group which had a very high median house value (over 800,000), and a very low median household income (less than $8,000). The purpose of their removal was to remove any outliers, no data, and insufficient sample size from our analysis.
 
 
-## Exploratory Analysis
+## Methods
 In this section, we will evaluate the summary statistics and distributions of the dependent variable and predictors.
 In our exploratory data analysis, we will also examine the correlations between the predictors. A correlation is the relationship between two variables. The sample correlation coefficient r, the strength of a linear relationship between two variables (correlation strength) on a -1 to 1 scale, can be calculated with the following equation:
 $$r = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum (x_i - \bar{x})^2 \sum (y_i - \bar{y})^2}}$$
@@ -55,8 +55,8 @@ vars <- c("MEDHVAL","PCTBACHMOR", "NBELPOV100", "PCTVACANT", "PCTSINGLES")
 
 sum_table <- data.frame(
   Variable = c("Median House Value",
-                        "# Households Living in Poverty",
                         "% with Bachelor's Degree or Higher",
+                        "# Households Living in Poverty",
                         "% Vacant Houses",
                         "% Single House Units"),
   Mean = sapply(regdata[vars], mean, na.rm = TRUE), #creates column of mean values for each variable, ignoring null values.
@@ -75,8 +75,9 @@ for (v in vars){
 }
 
 ```
-# Results: Exploratory Analysis
-According to the summary statistics table, the average Median House Value in Philadelphia, the dependent variable, across the blocks in our sample is 66287.73 with a standard deviation of 60006.08. For the predictor variables: The average # Households Living in Poverty is 16 with a standard deviation of 18. The average % with Bachelor's Degree or Higher	is 189.77% with a standard deviation of 164.32%. The average % Vacant Houses is 11.29% with a standard deviation of 9.63%. The average % Single House Units is 9.23% with a standard deviation of 13.25%.	
+
+## Results
+According to the summary statistics table, the average Median House Value in Philadelphia, the dependent variable, across the blocks in our sample is 66287.73 with a standard deviation of 60006.08. For the predictor variables: The average % of households with a Bachelors degree or higher is 16.08% with a standard deviation of 17.77%. The average number of households living in poverty is 189 with a standard deviation of 164. The average % Vacant Houses is 11.29% with a standard deviation of 9.63%. The average % Single House Units is 9.23% with a standard deviation of 13.25%.	
 
 ```{r}
 #| label: log transformations and its effect on the distribution
@@ -181,9 +182,11 @@ p4 <- ggplot(c_map) + geom_sf(aes(fill = PCTSINGLES))   +scale_fill_distiller(pa
 ```
 The only maps that look similar are the dependent variable map (log of the median house value) and the percent of households with a bachelors degree or more. The rest of the maps look vastly different. The predictor we expect to be strongly associated with the dependent variable based solely on visualization is the percent of households with a bachelor's degree and more. The striking similarity of these two maps signals to us that there may be inter-correlation between these variables. We also suspect multicollinearity to be an underlying issue for this similarity.
 
-## Stepwise Regression
-# Sophia
-# include regression assumption checks
+# Stepwise Regression
+
+##Sophia
+
+###include regression assumption checks
 ```{r}
 #| label: Using Stepwise regression to determine the best model based on the Akaike Information Criterion
 
@@ -210,10 +213,11 @@ step_model$anova
 formula(step_model)
 ```
 
-## K-fold Cross Validation
-# Sophia
+#K-fold Cross Validation
+
+##Sophia
 ```{r}
-#| label: calculating RMSE and re-running the model with two predictors: PCTVACANT and MEDHHINC 
+#| label: calculating RMSE and re-running the model with two predictors; PCTVACANT and MEDHHINC 
 
 # 5-fold cross-validation for the full four-predictor model
 cv_full <- CVlm(
@@ -271,16 +275,16 @@ rmse_results <- data.frame(
 rmse_results
 ```
 
-# Results
-i.	According to the summary statistics table, the average Median House Value in Philadelphia, the dependent variable, across the blocks in our sample is 66287.73 with a standard deviation of 60006.08. For the predictor variables: The average # Households Living in Poverty is 16 with a standard deviation of 18. The average % with Bachelor's Degree or Higher	is 189.77% with a standard deviation of 164.32%. The average % Vacant Houses is 11.29% with a standard deviation of 9.63%. The average % Single House Units is 9.23% with a standard deviation of 13.25%.	
 
-## Standardized Regression Residuals
-# Evelyn
+# Standardized Regression Residuals
+
+## Evelyn
 ```{r}
 #| label: Histogram and Chloropleth map of standardized regression residuals
 
 
 ```
 
-## Discussions and Limitations
-# Evelyn
+# Discussions and Limitations
+
+## Evelyn
