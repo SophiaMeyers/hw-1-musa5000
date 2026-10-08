@@ -1,0 +1,286 @@
+---
+title: "Homework 1: Using OLS Regression to Predict Median House Values in Philadelphia"
+authors: Chloe Alimurong, Sophia Meyers & Evelyn Zhong
+date: October 5, 2026
+output: rmdformats::readthedown
+---
+
+# Introduction
+In this analysis, we will assess the relationship between median house values in Philadelphia and variables such as # Households Living in Poverty, % with Bachelor's Degree or Higher, % Vacant Houses and % Single House Units. 
+
+The predictors in our analysis describe different aspects of housing that could potentially influence house values and prices. The number of households in poverty and with a bachelors degree, to some degree, explain the economic status of the demographic's housing market. Those living in poverty may not be able to afford houses with higher price tags and those with a bachelors degree may have an income that could afford houses with higher price tags. These population factors indirectly relate to house value, thus why we chose them to predict in our analysis. For unit-specific predictors like vacant houses and single house units, these two signal environmental factors that could influence house value. For vacant houses, we expect that the neighborhood may not be as desirable or may not have high economic activity, making it less desirable to live, which could decrease house values. The percentage of single house units may also highlight the neighborhood's population. In Philadelphia, it is rare to see single-family detached homes. The common house type are multi-family style houses. So for those living in single-family homes, it indicates the desire to live at longer terms and farther from the city center. These types of homes may single out those with higher incomes to afford a single unit house within a city, which may mean higher house value. All of these predictors indicate something about the housing market population and environment indirectly, making them good examples of variables to predict median house value within Philadelphia.
+
+```{r}
+#| label: setup
+#| warning: false
+#| message: false 
+# note to self: make sure all libraries are in use or necessary (since tidyverse has a lot)...
+
+library(sf)
+library(Hmisc)
+library(DAAG)
+library(car)
+library(MASS)
+library(rsq)
+library(tidyverse)
+library(caret)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(patchwork)
+library(corrplot)
+
+```
+
+# Methods: Exploratory Analysis
+## Data Cleaning
+The original Philadelphia Block Group dataset had 1816 observations and was cleaned in order to achieve a dataset with 1720 observations. The following items were removed; Block groups where population < 40, Block groups where there are no housing units, Block groups where the median house value is lower than 10,000, One North Philadelphia block group which had a very high median house value (over 800,000), and a very low median household income (less than $8,000). The purpose of their removal was to remove any outliers, no data, and insufficient sample size from our analysis.
+
+
+## Exploratory Analysis
+In this section, we will evaluate the summary statistics and distributions of the dependent variable and predictors.
+In our exploratory data analysis, we will also examine the correlations between the predictors. A correlation is the relationship between two variables. The sample correlation coefficient r, the strength of a linear relationship between two variables (correlation strength) on a -1 to 1 scale, can be calculated with the following equation:
+$$r = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum (x_i - \bar{x})^2 \sum (y_i - \bar{y})^2}}$$
+The possible range of r values is -1 to 1. A correlation of 0 means there is no linear relationship between the two variables.
+```{r}
+#| label: summary statistics & examining the distribution of the dependent variable and predictors
+
+#regdata <- read.csv("~/GitHub/MUSA-5000-portfolio/HW1/RegressionData.csv")
+regdata <- read.csv("RegressionData.csv")
+#names(regdata) # gets the names of each variable.
+
+regdata <- regdata %>% mutate(across(where(is.character), as.numeric)) # some of them were returning a string, we need a number to run summary statistics.
+
+vars <- c("MEDHVAL","PCTBACHMOR", "NBELPOV100", "PCTVACANT", "PCTSINGLES")
+
+sum_table <- data.frame(
+  Variable = c("Median House Value",
+                        "# Households Living in Poverty",
+                        "% with Bachelor's Degree or Higher",
+                        "% Vacant Houses",
+                        "% Single House Units"),
+  Mean = sapply(regdata[vars], mean, na.rm = TRUE), #creates column of mean values for each variable, ignoring null values.
+  SD = sapply(regdata[vars], sd, na.rm = TRUE) #creates column of sd values for each variable, ignoring null values.
+)
+
+sum_table
+
+#running hist on all of the variables we defined above
+for (v in vars){
+  hist(regdata[[v]],
+       main = paste("Distribution of ", v),
+       xlab =v,
+       col = "lightblue",
+       border = "darkblue")
+}
+
+```
+# Results: Exploratory Analysis
+According to the summary statistics table, the average Median House Value in Philadelphia, the dependent variable, across the blocks in our sample is 66287.73 with a standard deviation of 60006.08. For the predictor variables: The average # Households Living in Poverty is 16 with a standard deviation of 18. The average % with Bachelor's Degree or Higher	is 189.77% with a standard deviation of 164.32%. The average % Vacant Houses is 11.29% with a standard deviation of 9.63%. The average % Single House Units is 9.23% with a standard deviation of 13.25%.	
+
+```{r}
+#| label: log transformations and its effect on the distribution
+
+regdata <- regdata %>%
+  mutate(LNMEDHVAL    = log(MEDHVAL),
+         LNPCTBACHMOR = log(1 + PCTBACHMOR),
+         LNBELPOV100 = log(1 + NBELPOV100),
+         LNPCTVACANT  = log(1 + PCTVACANT),
+         LNPCTSINGLES = log(1 + PCTSINGLES))
+
+hist(regdata$MEDHVAL, main = "MEDHVAL", xlab = "MEDHVAL",col = "lightblue",border = "darkblue")
+hist(regdata$LNMEDHVAL, main = "LNMEDHVAL", xlab = "LNMEDHVAL",col = "lightblue",border = "darkblue")
+
+
+hist(regdata$PCTBACHMOR, main = "PCTBACHMOR",  xlab = "PCTBACHMOR",col = "lightblue",border = "darkblue")
+hist(regdata$LNPCTBACHMOR, main = "LNPCTBACHMOR", xlab = "LNPCTBACHMOR",col = "lightblue",border = "darkblue")
+
+
+hist(regdata$NBELPOV100,  main = "NBELPOV100",  xlab = "NBELPOV100",col = "lightblue",border = "darkblue")
+hist(regdata$LNBELPOV100, main = "LNBELPOV100", xlab = "LNBELPOV100",col = "lightblue",border = "darkblue")
+
+hist(regdata$PCTVACANT,  main = "PCTVACANT",  xlab = "PCTVACANT",col = "lightblue",border = "darkblue")
+hist(regdata$LNPCTVACANT, main = "LNPCTVACANT", xlab = "LNPCTVACANT",col = "lightblue",border = "darkblue")
+
+hist(regdata$PCTSINGLES,  main = "PCTSINGLES",  xlab = "PCTSINGLES",col = "lightblue",border = "darkblue")
+hist(regdata$LNPCTSINGLES, main = "LNPCTSINGLES", xlab = "LNPCTSINGLES",col = "lightblue",border = "darkblue")
+
+```
+The variables are were not normal before the logarithmic transformation, they were mostly skewed right. Whereas after the logarithmic transformation, they become more normally distributed.
+In our regression, we use the log-transformed variables for the dependent variable (median house value) and the number of households below poverty predictor.
+The other regression assumptions will be examined in a separate section below (Regression Assumption Checks).
+
+```{r}
+#| label: Scatter plot for each predictor
+#| message: false
+#| warning: false
+
+regdata %>%
+  dplyr::select(LNMEDHVAL, PCTBACHMOR, LNBELPOV100, PCTVACANT, PCTSINGLES) %>%
+  pivot_longer(-LNMEDHVAL, names_to = "Predictor", values_to = "Value") %>%
+  ggplot(aes(x = Value, y = LNMEDHVAL)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE, color = "purple") +
+  facet_wrap(~Predictor, scales = "free_x") +
+  labs(x = NULL, y = "LNMEDHVAL")
+
+```
+
+```{r}
+#| label: Pearson correlation for each predictor
+
+#cor(regdata$PCTVACANT, regdata$MEDHVAL, method = "pearson")
+#cor(regdata$PCTSINGLES, regdata$MEDHVAL, method = "pearson")
+#cor(regdata$PCTBACHMOR, regdata$MEDHVAL, method = "pearson")
+#cor(regdata$NBELPOV100, regdata$MEDHVAL, method = "pearson")
+
+var <- c("MEDHVAL", "PCTBACHMOR", "NBELPOV100", "PCTVACANT", "PCTSINGLES")
+
+pearson <- rcorr(as.matrix(regdata[, var]), type = "pearson")          
+pearson$r
+corrplot(
+  pearson$r, type = "upper", order = "hclust", diag = FALSE,
+  p.mat = pearson$P, sig.level = 0.05, insig = "blank",
+  tl.col = "black", tl.srt = 45,
+  col = colorRampPalette(c("red", "white", "blue"))(200)
+)
+```
+The correlation matrix shows that there is severe multicollinearity. Especially between Median House Value and Percent of households with bachelors degree or more, matching the conclusion from our predictor maps above.
+
+```{r}
+#| label: Chloropleth maps of each variable using the sf (simple features) and ggplot packages
+#| note: readOGR has been officially retired as a part of the rgdal library.
+
+#shapefile <- "~/GitHub/hw-1-musa5000/Lecture 1 - RegressionData.shp/RegressionData.shp"
+shapefile <- "Lecture 1 - RegressionData.shp/RegressionData.shp"
+
+c_map = read_sf(shapefile)
+
+#names(c_map)
+
+c_map <- c_map %>%
+  mutate(LNMEDHVAL    = log(MEDHVAL),
+         LNBELPOV100 = log(1 + NBelPov100),
+         PCTVACANT, PCTSINGLES, PCTBACHMOR)
+
+#maps the log of the dependent variable: LNMEDHVAL
+ggplot(c_map) +
+  geom_sf(aes(fill=LNMEDHVAL))+
+  scale_fill_distiller(palette = "BuPu", direction = 1)+
+  theme_void()+
+  labs(title = "Log of Median House Value")
+
+# maps 2-5: the four predictors
+p1 <- ggplot(c_map) + geom_sf(aes(fill = LNBELPOV100)) +scale_fill_distiller(palette = "BuPu", direction = 1) + theme_void() + labs(title = "LNBELPOV100")
+p2 <- ggplot(c_map) + geom_sf(aes(fill = PCTBACHMOR))   +scale_fill_distiller(palette = "BuPu", direction = 1) + theme_void() + labs(title = "PCTBACHMOR")
+p3 <- ggplot(c_map) + geom_sf(aes(fill = PCTVACANT))    +scale_fill_distiller(palette = "BuPu", direction = 1) + theme_void() + labs(title = "PCTVACANT")
+p4 <- ggplot(c_map) + geom_sf(aes(fill = PCTSINGLES))   +scale_fill_distiller(palette = "BuPu", direction = 1) + theme_void() +labs(title = "PCTSINGLES")
+
+# combine into one 2x2 figure
+(p1 | p2) / (p3 | p4)
+```
+The only maps that look similar are the dependent variable map (log of the median house value) and the percent of households with a bachelors degree or more. The rest of the maps look vastly different. The predictor we expect to be strongly associated with the dependent variable based solely on visualization is the percent of households with a bachelor's degree and more. The striking similarity of these two maps signals to us that there may be inter-correlation between these variables. We also suspect multicollinearity to be an underlying issue for this similarity.
+
+## Stepwise Regression
+# Sophia
+# include regression assumption checks
+```{r}
+#| label: Using Stepwise regression to determine the best model based on the Akaike Information Criterion
+
+# Full OLS model with all four predictors
+model_full <- lm(
+  LNMEDHVAL ~ PCTVACANT + PCTSINGLES + PCTBACHMOR + LNBELPOV100,
+  data = regdata
+)
+
+summary(model_full)
+```
+```{r}
+# Stepwise regression using AIC
+step_model <- step(model_full)
+
+step_model
+```
+```{r}
+# View the sequence of models considered
+step_model$anova
+```
+```{r}
+# Show the final model selected by stepwise regression
+formula(step_model)
+```
+
+## K-fold Cross Validation
+# Sophia
+```{r}
+#| label: calculating RMSE and re-running the model with two predictors: PCTVACANT and MEDHHINC 
+
+# 5-fold cross-validation for the full four-predictor model
+cv_full <- CVlm(
+  data = regdata,
+  form.lm = model_full,
+  m = 5,
+  plotit = FALSE
+)
+```
+
+```{r}
+names(cv_full)
+str(cv_full)
+```
+
+```{r}
+# Calculate RMSE for the full model
+rmse_full <- sqrt(
+  mean((cv_full$LNMEDHVAL - cv_full$cvpred)^2, na.rm = TRUE)
+)
+rmse_full
+```
+```{r}
+# Model with PCTVACANT and MEDHHINC
+model_two <- lm(
+  LNMEDHVAL ~ PCTVACANT + MEDHHINC,
+  data = regdata
+)
+summary(model_two)
+
+# 5-fold cross-validation
+cv_two <- CVlm(
+  data = regdata,
+  form.lm = model_two,
+  m = 5,
+  plotit = FALSE
+)
+
+# Calculate 5-fold cross-validation RMSE
+rmse_two <- sqrt(
+  mean((cv_two$LNMEDHVAL - cv_two$cvpred)^2, na.rm = TRUE)
+)
+
+rmse_two
+```
+```{r}
+rmse_results <- data.frame(
+  Model = c(
+    "Full model: 4 predictors",
+    "Reduced model: PCTVACANT + MEDHHINC"
+  ),
+  RMSE = c(rmse_full, rmse_two)
+)
+
+rmse_results
+```
+
+# Results
+i.	According to the summary statistics table, the average Median House Value in Philadelphia, the dependent variable, across the blocks in our sample is 66287.73 with a standard deviation of 60006.08. For the predictor variables: The average # Households Living in Poverty is 16 with a standard deviation of 18. The average % with Bachelor's Degree or Higher	is 189.77% with a standard deviation of 164.32%. The average % Vacant Houses is 11.29% with a standard deviation of 9.63%. The average % Single House Units is 9.23% with a standard deviation of 13.25%.	
+
+## Standardized Regression Residuals
+# Evelyn
+```{r}
+#| label: Histogram and Chloropleth map of standardized regression residuals
+
+
+```
+
+## Discussions and Limitations
+# Evelyn
