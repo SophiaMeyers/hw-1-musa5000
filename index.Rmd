@@ -278,7 +278,44 @@ i.	According to the summary statistics table, the average Median House Value in 
 # Evelyn
 ```{r}
 #| label: Histogram and Chloropleth map of standardized regression residuals
+#| message: false
+#| warning: false
 
+# save fitted values, residuals, and standardized residuals from the full model
+idx <- as.numeric(names(fitted(model_full)))
+regdata$predicted <- NA
+regdata$resid     <- NA
+regdata$stdres    <- NA
+regdata$predicted[idx] <- fitted(model_full)
+regdata$resid[idx]     <- residuals(model_full)
+regdata$stdres[idx]    <- rstandard(model_full)
+
+# histogram of standardized residuals
+ggplot(regdata, aes(x = stdres)) +
+  geom_histogram(binwidth = 0.25, fill = "#8c6bb1", color = "white") +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  theme_minimal() +
+  labs(title = "Histogram of Standardized Residuals",
+       x = "Standardized residual", y = "Number of block groups")
+
+# numbers to cite
+summary(regdata$stdres)
+sum(abs(regdata$stdres) > 2, na.rm = TRUE)  # block groups beyond +/-2
+sum(abs(regdata$stdres) > 3, na.rm = TRUE)  # block groups beyond +/-3
+
+# join residuals to the shapefile by POLY_ID
+c_map <- c_map %>%
+  mutate(POLY_ID = as.numeric(POLY_ID)) %>%
+  left_join(regdata %>% dplyr::select(POLY_ID, stdres), by = "POLY_ID")
+
+# choropleth of standardized residuals, same palette as the other maps
+ggplot(c_map) +
+  geom_sf(aes(fill = stdres)) +
+  scale_fill_distiller(palette = "BuPu", direction = 1,
+                      limits = c(-3, 3), oob = scales::squish) +
+  theme_void() +
+  labs(title = "Standardized Regression Residuals", fill = "Std. residual")
+```
 
 ```
 
