@@ -90,6 +90,7 @@ there is no linear relationship between the two variables.
 
 ```{r}
 #| label: summary statistics & examining the distribution of the dependent variable and predictors
+#| echo: false
 
 #regdata <- read.csv("~/GitHub/MUSA-5000-portfolio/HW1/RegressionData.csv")
 regdata <- read.csv("RegressionData.csv")
@@ -136,6 +137,7 @@ deviation of 13.25%.
 
 ```{r}
 #| label: log transformations and its effect on the distribution
+#| echo: false
 
 regdata <- regdata %>%
   mutate(LNMEDHVAL    = log(MEDHVAL),
@@ -175,6 +177,7 @@ separate section below (Regression Assumption Checks).
 #| label: Scatter plot for each predictor
 #| message: false
 #| warning: false
+#| echo: false
 
 regdata %>%
   dplyr::select(LNMEDHVAL, PCTBACHMOR, LNBELPOV100, PCTVACANT, PCTSINGLES) %>%
@@ -189,6 +192,7 @@ regdata %>%
 
 ```{r}
 #| label: Pearson correlation for each predictor
+#| echo: false
 
 #cor(regdata$PCTVACANT, regdata$MEDHVAL, method = "pearson")
 #cor(regdata$PCTSINGLES, regdata$MEDHVAL, method = "pearson")
@@ -215,6 +219,7 @@ maps above.
 ```{r}
 #| label: Chloropleth maps of each variable using the sf (simple features) and ggplot packages
 #| note: readOGR has been officially retired as a part of the rgdal library.
+#| echo: false
 
 #shapefile <- "~/GitHub/hw-1-musa5000/Lecture 1 - RegressionData.shp/RegressionData.shp"
 shapefile <- "Lecture 1 - RegressionData.shp/RegressionData.shp"
@@ -311,6 +316,7 @@ All analyses were performed in R.
 
 ```{r}
 #| label: Using Stepwise regression to determine the best model based on the Akaike Information Criterion
+#| echo: false
 
 model_full <- lm(
   LNMEDHVAL ~ PCTVACANT + PCTSINGLES + PCTBACHMOR + LNBELPOV100,
@@ -358,6 +364,7 @@ outliers. The histogram of the standardized residuals is shown in the
 Standardized Regression Residuals section.
 
 ```{r}
+#| echo: false
 resid_df <- data.frame(
   predicted = fitted(model_full),
   stdres    = rstandard(model_full)
@@ -373,6 +380,7 @@ ggplot(resid_df, aes(x = predicted, y = stdres)) +
 ```
 
 ```{r}
+#| echo: false
 n_out2 <- sum(abs(resid_df$stdres) > 2)
 n_out3 <- sum(abs(resid_df$stdres) > 3)
 n_out2
@@ -398,12 +406,14 @@ the next assignment.
 #### Stepwise Regression
 
 ```{r}
+#| echo: false
 step_model <- step(model_full, direction = "both")
 step_model$anova
 formula(step_model)
 ```
 
 ```{r}
+#| echo: false
 kept_all <- length(coef(step_model)) == length(coef(model_full))
 ```
 
@@ -416,7 +426,7 @@ All four predictors are therefore kept in the final model.
 
 ```{r}
 #| label: calculating RMSE and re-running the model with two 
-
+#| echo: false
 cv_data <- regdata %>%
   dplyr::select(LNMEDHVAL, PCTVACANT, PCTSINGLES, PCTBACHMOR, LNBELPOV100, MEDHHINC) %>%
   na.omit()
@@ -465,7 +475,7 @@ house values better. The RMSE is in log-dollar units.
 #| label: Histogram and Chloropleth map of standardized regression residuals
 #| message: false
 #| warning: false
-
+#| echo: false
 idx <- as.numeric(names(fitted(model_full)))
 regdata$predicted <- NA
 regdata$resid     <- NA
