@@ -41,9 +41,9 @@ Philadelphia.
 
 ```{r}
 #| label: setup
+#| echo: false
 #| warning: false
 #| message: false 
-# note to self: make sure all libraries are in use or necessary (since tidyverse has a lot)...
 
 library(sf)
 library(Hmisc)
@@ -255,7 +255,7 @@ signals to us that there may be inter-correlation between these
 variables. We also suspect multicollinearity to be an underlying issue
 for this similarity.
 
-##Sophia \# Regression Analysis \## Methods \### Multiple Regression
+## Regression Analysis, Methods & Multiple Regression
 Analysis Multiple linear regression models how a continuous dependent
 variable changes with several predictors at once. Our model is:
 
@@ -411,9 +411,8 @@ Stepwise regression starting from the full model (AIC = -3448.1) did not
 drop any predictor, because removing any of them would raise the AIC.
 All four predictors are therefore kept in the final model.
 
-#K-fold Cross Validation
+# K-fold Cross Validation
 
-##Sophia
 
 ```{r}
 #| label: calculating RMSE and re-running the model with two 
@@ -461,8 +460,6 @@ four-predictor model has the lower RMSE, so it predicts held-out median
 house values better. The RMSE is in log-dollar units.
 
 # Standardized Regression Residuals
-
-## Evelyn
 
 ```{r}
 #| label: Histogram and Chloropleth map of standardized regression residuals
